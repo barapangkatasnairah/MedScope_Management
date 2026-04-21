@@ -676,7 +676,34 @@ function resetForm() {
 }
 
 function cancelEdit() { resetForm(); showTab('view'); }
-function deleteDoctor(i) { if(confirm("Permanently delete clinician record? This action cannot be undone.")) { doctors.splice(i,1); save(); renderView(); searchDoctors(); } }
+
+// -----------------------------------------------------
+// UPDATED FUNCTION: Now deletes associated coverage logs
+// -----------------------------------------------------
+function deleteDoctor(i) { 
+  if(confirm("Permanently delete clinician record? This action cannot be undone.")) { 
+    // Capture the doctor's name before deleting them
+    let deletedDocName = doctors[i].name;
+    
+    // Remove from the main directory
+    doctors.splice(i,1); 
+    
+    // Clean up all historical coverage logs associated with this doctor
+    coverageLogs = coverageLogs.filter(log => log.doctor !== deletedDocName);
+    
+    save(); 
+    
+    // Re-render UI components based on the active view
+    renderView(); 
+    searchDoctors(); 
+    if (document.getElementById('itinerary').style.display === 'block') {
+      renderItineraryDashboard();
+      renderLogs();
+      renderLeaderboard();
+      renderPerformanceGraph();
+    }
+  } 
+}
 
 /* ================= DIRECTORY & AGENDA ================= */
 function liveSearch() { clearTimeout(searchTimeout); searchTimeout = setTimeout(searchDoctors, 250); }
